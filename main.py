@@ -41,7 +41,7 @@ while game_is_on:
         player.go_to_start() # Reseta a posição física do jogador para o início
         car_manager.increase_speed() # Eleva a dificuldade (velocidade e densidade) para a próxima rodada
         scoreboard.total_score() # Incrementa o nível visual no placar
-        print("Jogo finalizado. A tartaruga atravessou a rua em segurança!") # Feedback no console
+        print(f"A tartaruga atravessou a rua em segurança! Você foi para o level {scoreboard.score}") # Feedback no console
 
     # Verificação da condição de derrota (Colisão)
     for car in car_manager.all_cars: # Itera sobre cada carro em movimento na tela
