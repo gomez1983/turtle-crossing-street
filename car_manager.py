@@ -8,8 +8,8 @@ MOVE_INCREMENT = 2         # Ganho de velocidade por nível; valores altos criam
 CARS_QUANTITY = 5          # Divisor de spawn inicial; valores baixos geram uma densidade de carros maior desde o início
 
 # Definição das faixas de tráfego (Eixo Y)
-INFERIOR_LIMIT = -240 # Início da zona de tráfego; subir este valor libera espaço na parte inferior da tela
-SUPERIOR_LIMIT = 240  # Fim da zona de tráfego; descer este valor cria uma área de segurança antes da linha de chegada
+INFERIOR_LIMIT = -220 # Início da zona de tráfego; subir este valor libera espaço na parte inferior da tela
+SUPERIOR_LIMIT = 250  # Fim da zona de tráfego; descer este valor cria uma área de segurança antes da linha de chegada
 TOTAL_SPACE = 30      # Intervalo entre faixas; valores menores que 20 causam sobreposição visual dos carros
 POSITIONS = [y for y in range(INFERIOR_LIMIT, SUPERIOR_LIMIT + 1, TOTAL_SPACE)] # Lista que mapeia todas as rotas fixas possíveis
 
