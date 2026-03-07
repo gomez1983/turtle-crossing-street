@@ -5,50 +5,52 @@ from car_manager import CarManager
 from scoreboard import Scoreboard
 
 # Configurações iniciais da janela e motor gráfico
-screen = Screen() # Cria a instância da janela principal
-screen.setup(width=600, height=600) # Define dimensões; 600x600 equilibra área de jogo e tempo de travessia
-screen.tracer(0) # Desativa animações automáticas; essencial para fluidez (FPS) e sincronia com screen.update()
+screen = Screen() # Cria a instância da janela principal do jogo
+screen.setup(width=600, height=600) # Define dimensões; 600x600 equilibra a área de tráfego e o tempo de reação
+screen.tracer(0) # Desativa animações automáticas para permitir o controle manual via screen.update()
 
 # Inicialização dos objetos do jogo através de Composição
-player = Player((0, -280)) # Instancia o jogador na posição inicial inferior
-car_manager = CarManager() # Instancia o gerenciador de tráfego e dificuldade
-scoreboard = Scoreboard() # Instancia o sistema de interface de usuário (UI) e placar
+player = Player((0, -280)) # Instancia o jogador na base da tela (eixo Y negativo)
+car_manager = CarManager() # Instancia o controlador de frota, velocidade e densidade de carros
+scoreboard = Scoreboard()  # Instancia a interface de placar e carregamento de recorde (High Score)
 
 # Configuração de entradas do teclado
-screen.listen() # Foca a janela para capturar comandos do teclado
+screen.listen() # Habilita o foco da janela para capturar eventos de teclas do usuário
 
 # Mapeamento de movimentação: associa teclas às funções de controle de estado (flags)
-screen.onkeypress(player.start_up, "Up") # Ativa movimento para cima ao pressionar
-screen.onkeyrelease(player.stop_up, "Up") # Interrompe movimento para cima ao soltar
-screen.onkeypress(player.start_down, "Down") # Ativa movimento para baixo ao pressionar
-screen.onkeyrelease(player.stop_down, "Down") # Interrompe movimento para baixo ao soltar
+screen.onkeypress(player.start_up, "Up")     # Inicia o movimento ascendente ao segurar a tecla
+screen.onkeyrelease(player.stop_up, "Up")    # Interrompe o movimento ascendente ao soltar a tecla
+screen.onkeypress(player.start_down, "Down") # Inicia o movimento descendente ao segurar a tecla
+screen.onkeyrelease(player.stop_down, "Down") # Interrompe o movimento descendente ao soltar a tecla
 
 # Controle de fluxo do jogo
-game_is_on = True # Variável booleana que sustenta a execução do motor do jogo
+game_is_on = True # Variável booleana que mantém o loop principal em execução
 
 # Loop de execução principal (Game Loop)
+
 while game_is_on:
-    time.sleep(0.05) # Define o FPS; valores menores (ex: 0.02) tornam o jogo mais rápido e fluido
-    player.update_position() # Processa o deslocamento do jogador baseado nas teclas pressionadas
-    screen.update() # Renderiza todas as mudanças de posição na tela simultaneamente
+    time.sleep(0.05)         # Sincronização de frames; valores menores (ex: 0.02) aumentam o FPS e a fluidez
+    player.update_position() # Aplica o deslocamento do jogador baseado nas teclas ativas
+    screen.update()          # Renderiza todas as mudanças de posição de uma só vez para evitar cintilação
 
     # Gerenciamento de tráfego
-    car_manager.create_car() # Tenta gerar um novo carro baseado na probabilidade atual
-    car_manager.move_cars() # Atualiza a posição X de todos os carros ativos na lista
+    car_manager.create_car() # Executa a tentativa de spawn de um novo carro conforme a probabilidade do nível
+    car_manager.move_cars()   # Desloca todos os carros ativos para a esquerda
 
-    # Verificação da condição de vitória (Travessia concluída)
-    if player.player.ycor() > 240: # Checa se a tartaruga ultrapassou a linha de chegada superior
-        player.go_to_start() # Reseta a posição física do jogador para o início
-        car_manager.increase_speed() # Eleva a dificuldade (velocidade e densidade) para a próxima rodada
-        scoreboard.total_score() # Incrementa o nível visual no placar
-        print(f"A tartaruga atravessou a rua em segurança! Você foi para o level {scoreboard.score}") # Feedback no console
+    # Verificação da condição de vitória (Travessia concluída com sucesso)
+    if player.player.ycor() > 240: # Checa se a tartaruga atingiu a zona de segurança superior
+        player.go_to_start()       # Retorna o jogador para a base sem reiniciar o jogo
+        car_manager.increase_speed() # Incrementa a dificuldade (velocidade/spawn) para o próximo nível
+        scoreboard.total_score()   # Atualiza o nível visual no placar
+        print(f"A tartaruga atravessou a rua em segurança! Você foi para o level {scoreboard.score}")
 
-    # Verificação da condição de derrota (Colisão)
-    for car in car_manager.all_cars: # Itera sobre cada carro em movimento na tela
-        if car.distance(player.player) < 20: # Checa proximidade; 20px é o limite do corpo da tartaruga
-            game_is_on = False # Quebra o loop principal para interromper o jogo
-            scoreboard.game_over() # Exibe a mensagem de derrota na tela
-            print ("GAME OVER! Você foi atropelado.") # Feedback de encerramento no console
+    # Verificação da condição de derrota (Colisão detectada)
+    for car in car_manager.all_cars: # Percorre a lista de carros para checar distâncias individuais
+        if car.distance(player.player) < 20: # Limite de proximidade física entre a tartaruga e o veículo
+            scoreboard.reset_score() # Compara o nível atual com o recorde e salva no arquivo data.txt
+            game_is_on = False       # Interrompe a execução do loop principal
+            scoreboard.game_over()   # Renderiza a mensagem de fim de jogo no centro da tela
+            print("GAME OVER! Você foi atropelado.") # Log final no console
 
-# Finalização
-screen.exitonclick() # Mantém a janela ativa para visualização do placar final até o clique do usuário
+# Finalização do ambiente
+screen.exitonclick() # Mantém a janela aberta após o término para análise do placar final

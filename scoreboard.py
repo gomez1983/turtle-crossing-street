@@ -1,36 +1,57 @@
 from turtle import Turtle
 
 # Configurações globais de estilo e posicionamento
-ALIGNMENT = "left"               # Define a ancoragem do texto; 'left' mantém o placar fixo no canto superior
-FONT = ("Courier", 20, "normal") # Estilo do nível; aumentar o tamanho pode sobrepor a área de jogo
-FONT_GAME_OVER = ("Courier", 24, "bold") # Estilo de alerta; o negrito garante visibilidade sobre os carros
+ALIGNMENT = "left"               # Ancoragem do texto; 'left' fixa o início da frase no ponto de destino
+FONT = ("Courier", 20, "normal") # Estilo do texto; aumentar o tamanho pode invadir a área de jogo dos carros
+FONT_GAME_OVER = ("Courier", 24, "bold") # Fonte de destaque; o negrito garante leitura sobreposta ao tráfego
 
 class Scoreboard(Turtle):
-    """Gerencia a interface de usuário (UI), exibindo o progresso e o fim do jogo."""
+    """Gerencia a interface de usuário (UI), persistência de recorde em disco e estado do jogo."""
 
     def __init__(self):
-        """Inicializa o componente de texto herdando as capacidades gráficas da Turtle."""
-        super().__init__()        # Herda métodos da Turtle para desenhar strings diretamente na tela
-        self.color("black")       # Define a cor da fonte; preto é ideal para o fundo padrão branco
-        self.penup()              # Garante que o objeto se mova para os cantos sem deixar rastros
-        self.hideturtle()         # Oculta o cursor em forma de seta para exibir apenas o texto
-        self.score = 1            # Contador de nível; dita a dificuldade atual no motor do jogo
-        self.update_scoreboard()  # Realiza a primeira renderização do nível na tela
+        """Inicializa o sistema de placar, herdando de Turtle e carregando o arquivo de dados."""
+        super().__init__()           # Ativa herança de Turtle para realizar desenhos e escritas na tela
+        self.color("black")          # Define a cor da fonte; preto contrasta com o fundo padrão da Screen
+        self.penup()                 # Levanta a caneta para evitar rastros durante o posicionamento do placar
+        self.hideturtle()            # Oculta o ícone da tartaruga, deixando apenas o texto visível
+        self.score = 1               # Atributo do nível atual; define a dificuldade progressiva
+        
+        # Leitura persistente: abre o arquivo TXT para recuperar o recorde salvo anteriormente
+        with open("data.txt") as data:
+            self.high_score = int(data.read()) # Converte o texto do arquivo em número inteiro
+            
+        self.update_scoreboard()     # Realiza a renderização visual inicial dos dados carregados
 
     def update_scoreboard(self):
-        """Limpa o registro anterior e redesenha o nível atualizado na posição designada."""
-        self.clear()              # Remove o texto anterior para evitar borrões e sobreposição
-        self.goto(-280, 260)      # Posiciona o texto no canto superior esquerdo, fora da rota dos carros
-        # Renderiza a string do nível usando as constantes de formatação definidas globalmente
+        """Limpa o visor e redesenha o Nível e o High Score em posições distintas para evitar sobreposição."""
+        self.clear()                 # Apaga a escrita anterior para evitar borrões de sobreposição de números
+        
+        # Posicionamento e escrita do Nível Atual no canto superior esquerdo
+        self.goto(-280, 260)         # Coordenadas fixas fora da zona de movimentação dos carros
         self.write(f"Level: {self.score}", align=ALIGNMENT, font=FONT)
+        
+        # Posicionamento e escrita do Recorde (High Score) no topo central/direito
+        self.goto(0, 260)            # Desloca o cursor horizontalmente para separar as informações
+        self.write(f"High Score: {self.high_score}", align=ALIGNMENT, font=FONT)
+
+    def reset_score(self):
+        """Atualiza o recorde no sistema, sobrescreve o arquivo TXT e reinicia o contador de nível."""
+        if self.score > self.high_score:    # Checa se o desempenho atual superou o recorde histórico
+            self.high_score = self.score   # Atualiza o atributo em tempo de execução
+            # Gravação em disco: o modo 'w' apaga o valor antigo e insere o novo recorde
+            with open("data.txt", mode="w") as data:
+                data.write(f"{self.high_score}")
+        
+        self.score = 1                     # Reseta o progresso do jogador para o nível inicial
+        self.update_scoreboard()           # Atualiza a tela com os novos valores (ou valores resetados)
 
     def total_score(self):
-        """Soma um ponto ao nível e dispara a atualização visual após uma travessia bem-sucedida."""
-        self.score += 1           # Incrementa o progresso do jogador
-        self.update_scoreboard()  # Atualiza o visor para refletir a nova dificuldade
+        """Soma um ponto ao nível e atualiza a interface após uma travessia concluída."""
+        self.score += 1                    # Incrementa o nível de dificuldade
+        self.update_scoreboard()           # Redesenha o placar com o novo nível
 
     def game_over(self):
-        """Finaliza a interface exibindo a mensagem de encerramento no centro do visor."""
+        """Exibe a mensagem final de derrota no centro da tela ao detectar colisão."""
         
-        self.goto(0, 0)           # Move o cursor para a origem central (0,0) para o anúncio final
-        self.write("GAME OVER", align="center", font=FONT_GAME_OVER) # Exibe o aviso de derrota
+        self.goto(0, 0)                    # Move para a origem central para máxima visibilidade do aviso
+        self.write("GAME OVER", align="center", font=FONT_GAME_OVER) # Anuncia o fim da partida
